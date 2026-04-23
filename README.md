@@ -1,5 +1,28 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Database
+
+### Seeding
+
+A reusable CSV seed function is available at `prisma/seed-csv.ts`.
+
+**Import and use in code:**
+```ts
+import { seedFromCsv } from "./prisma/seed-csv";
+const result = await seedFromCsv("/path/to/file.csv");
+// result: { added, skipped, errors, total }
+```
+
+**Run directly from CLI:**
+```bash
+npx tsx --env-file=.env prisma/seed-csv.ts path/to/file.csv
+```
+
+The CSV should be semicolon-delimited with these columns (header row is auto-skipped):
+`INC-Ticket;Datum;Postcode huisnr;Klantnummer;Casenummer;Go care ticket;Onderwerp;Aangemaakt door;segment;Solved = Y;ST;Opmerkingen;Voorgaand/oud ticket nummer`
+
+Duplicates (matching `incTicket`) are automatically ignored via upsert.
+
 ## Getting Started
 
 First, run the development server:

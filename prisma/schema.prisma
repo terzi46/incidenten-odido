@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Incident {
+  id              Int      @id @default(autoincrement())
+  incTicket       String   @unique @map("inc_ticket")        // INC0860559
+  datum           DateTime @map("datum")                     // 04.02.26
+  postcodeHuisnr  String   @map("postcode_huisnr")           // 6524 LM7
+  klantnummer     String   @map("klantnummer")               // XAB64795
+  casenummer      String?  @map("casenummer")                // 81944289
+  goCareTicket    String?  @map("go_care_ticket")            // T2603847712
+  onderwerp       String   @map("onderwerp")                 // TV - Happeren/wegvallend geluid mediabox
+  aangemaaktDoor  String   @map("aangemaakt_door")           // Terence Girrel
+  segment         String?  @map("segment")                   // TV
+  solved          Boolean  @default(false) @map("solved")    // Y/N
+  st              String?  @map("st")                        // ST field
+  opmerkingen     String?  @map("opmerkingen")               // Comments
+  voorgaandTicket String?  @map("voorgaand_ticket")          // Previous ticket number
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("incidents")
+}
