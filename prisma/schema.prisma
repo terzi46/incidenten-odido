@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../app/generated/prisma"
 }
 
@@ -8,23 +8,104 @@ datasource db {
 }
 
 model Incident {
-  id              Int      @id @default(autoincrement())
-  incTicket       String   @unique @map("inc_ticket")        // INC0860559
-  datum           DateTime @map("datum")                     // 04.02.26
-  postcodeHuisnr  String   @map("postcode_huisnr")           // 6524 LM7
-  klantnummer     String   @map("klantnummer")               // XAB64795
-  casenummer      String?  @map("casenummer")                // 81944289
-  goCareTicket    String?  @map("go_care_ticket")            // T2603847712
-  onderwerp       String   @map("onderwerp")                 // TV - Happeren/wegvallend geluid mediabox
-  aangemaaktDoor  String   @map("aangemaakt_door")           // Terence Girrel
-  segment         String?  @map("segment")                   // TV
-  solved          Boolean  @default(false) @map("solved")    // Y/N
-  st              String?  @map("st")                        // ST field
-  opmerkingen     String?  @map("opmerkingen")               // Comments
-  voorgaandTicket String?  @map("voorgaand_ticket")          // Previous ticket number
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id              Int                         @id @default(autoincrement())
+  incTicket       String                      @unique @map("inc_ticket")
+  datum           DateTime                    @map("datum")
+  postcodeHuisnr  String                      @map("postcode_huisnr")
+  klantnummer     String                      @map("klantnummer")
+  casenummer      String?                     @map("casenummer")
+  goCareTicket    String?                     @map("go_care_ticket")
+  onderwerp       String                      @map("onderwerp")
+  aangemaaktDoor  String                      @map("aangemaakt_door")
+  segment         String?                     @map("segment")
+  solved          Boolean                     @default(false) @map("solved")
+  st              String?                     @map("st")
+  opmerkingen     String?                     @map("opmerkingen")
+  voorgaandTicket String?                     @map("voorgaand_ticket")
+  vectors         Unsupported("vector(1024)")?
+  createdAt       DateTime                    @default(now()) @map("created_at")
+  updatedAt       DateTime                    @updatedAt @map("updated_at")
 
   @@map("incidents")
+}
+
+model AuditLog {
+  id          Int      @id @default(autoincrement())
+  action      String
+  incTicket   String?
+  field       String?
+  oldValue    String?
+  newValue    String?
+  performedBy String   @default("Hilmi")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("audit_logs")
+}
+
+model Chat {
+  id        String    @id
+  title     String?
+  userId    String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime
+  User      User?     @relation(fields: [userId], references: [id])
+  Message   Message[]
+}
+
+model Message {
+  id        String   @id
+  chatId    String
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+  Chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id              String            @id
+  voornaam        String
+  achternaam      String
+  createdAt       DateTime          @default(now())
+  email           String?           @unique
+  passwordHash    String?
+  role            String            @default("user")
+  Chat            Chat[]
+  DailyCaseReport DailyCaseReport[]
+}
+
+model DailyCaseReport {
+  id          String   @id
+  userId      String
+  count       Int
+  caseNumbers String
+  date        DateTime @default(now())
+  User        User     @relation(fields: [userId], references: [id])
+
+  @@index([date])
+  @@index([userId])
+}
+
+model FeatureRequest {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String
+  status      String    @default("open")
+  upvotes     Int       @default(0)
+  createdBy   String    @default("Gebruiker")
+  comments    Comment[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("feature_requests")
+}
+
+model Comment {
+  id               Int            @id @default(autoincrement())
+  content          String
+  createdBy        String         @default("Gebruiker")
+  featureRequestId Int            @map("feature_request_id")
+  featureRequest   FeatureRequest @relation(fields: [featureRequestId], references: [id], onDelete: Cascade)
+  createdAt        DateTime       @default(now()) @map("created_at")
+
+  @@map("comments")
 }
